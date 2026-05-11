@@ -249,6 +249,7 @@ Add action: **COMPOSE**, Rename: **Compose_email_body**, inside True (Green) Sid
 
 In Parameters, enter:
 
+```html
 <p><strong>Attention: Client Secret Expiring Soon</strong></p>
 
 <p><strong>Application:</strong> @{items('For_each_App')?['displayName']}</p>
@@ -258,6 +259,7 @@ In Parameters, enter:
 <p><strong>Expiration Date:</strong> @{items('For_each_client_secret')?['endDateTime']}</p>
 
 <p>This secret will expire in less than @{variables('thresholdDays')} days.</p>
+```
 
 ---
 

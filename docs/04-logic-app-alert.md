@@ -208,23 +208,24 @@ Add action: **Parse JSON**, Rename: **Parse_JSON_Servidores**
 ```
 ## 🧾 Step 6 – Loop Application
 
-Add action: **For Each**, Rename: **For_each_App**
+Add action: **For Each**, Rename: **For_each_App**  
 Input: **@body('Parse_JSON_Servidores')?['value']**
 
 ## 🧾 Step 7 – Loop Client Secrets
 
 Inside previous loop: 
-Add action: **For Each**, Rename: **For_each_client_secret**
-Input: @items('For_each_App')?['passwordCredentials']
+Add action: **For Each**, Rename: **For_each_client_secret**  
+Input: **@items('For_each_App')?['passwordCredentials']**
 
 ## Step 8 – Debug (Optional)
 
-Add action: **COMPOSE**, Rename: **Compose_Debug**
-Input: @item()
+Add action: **COMPOSE**, Rename: **Compose_Debug**  
+Input: **@item()**
 
 ## 🧾 Step 9 – Condition
 
-Add action: **Condition**, Rename: **Checa_Secrets_a_Expirar**
+Add action: **Condition**, Rename: **Checa_Secrets_a_Expirar**  
+
 Expression: 
 **@less(
   ticks(item()?['endDateTime']),
@@ -233,7 +234,8 @@ Expression:
 
 ## 🧾 Step 10 – Compose Email Body (Inside True)
 
-Add action: **COMPOSE**, Rename: **Compose_email_body**, inside True (Green) Side
+Add action: **COMPOSE**, Rename: **Compose_email_body**, inside True (Green) Side  
+
 In Parameters, enter:
 **<p><strong>Atenção: Client Secret próximo de expirar</strong></p>
 
@@ -247,7 +249,7 @@ In Parameters, enter:
 <p>Este secret expira em menos de 30 dias. Favor tomar as ações necessárias.</p>
 **
 
-## 📧 Step 11 – Send Email
+## 📧 Step 11 – Send Email  
 
 Add action: Send Email (From Azure Communication Service)
 
@@ -293,8 +295,6 @@ It **will NOT work** with:
 1. Go to Azure Portal  
 2. Navigate to: **Azure Communication Services**
 3. Select your resource
-
-```
 
 In the left menu, go to: **Email → Domains**
 Click your verified domain (e.g., yourdomain.azurecomm.net)

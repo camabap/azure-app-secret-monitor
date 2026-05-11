@@ -248,17 +248,16 @@ Expression:
 Add action: **COMPOSE**, Rename: **Compose_email_body**, inside True (Green) Side  
 
 In Parameters, enter:
-**<p><strong>Atenção: Client Secret próximo de expirar</strong></p>
 
-<p><strong>Aplicação:</strong> @{items('For_each_App')?['displayName']}</p>
+<p><strong>Attention: Client Secret Expiring Soon</strong></p>
+
+<p><strong>Application:</strong> @{items('For_each_App')?['displayName']}</p>
 <p><strong>AppId:</strong> @{items('For_each_App')?['appId']}</p>
 
 <p><strong>Client Secret:</strong> @{items('For_each_client_secret')?['displayName']}</p>
-<p><strong>Hint:</strong> @{items('For_each_client_secret')?['hint']}</p>
-<p><strong>Data de expiração:</strong> @{items('For_each_client_secret')?['endDateTime']}</p>
+<p><strong>Expiration Date:</strong> @{items('For_each_client_secret')?['endDateTime']}</p>
 
-<p>Este secret expira em menos de 30 dias. Favor tomar as ações necessárias.</p>
-**
+<p>This secret will expire in less than @{variables('thresholdDays')} days.</p>
 
 ---
 

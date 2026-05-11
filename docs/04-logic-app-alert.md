@@ -41,7 +41,7 @@ You can modify it later:
 "prod-" → production apps
 "dev-" → development apps
 
-## 🚀 Step 1 – Create Logic App
+**## 🚀 Step 1 – Create Logic App**
 
 1. Go to Azure Portal  
 2. Click **Create Resource**  
@@ -57,36 +57,34 @@ You can modify it later:
 | Region | `<Your Region>` |
 
 4. Click **Review + Create**
+5. Go to Your Logic App and Select **Logic App Designer**
 
 ---
 
-## ⏰ Step 2 – Configure Trigger (Recurrence)
+**## ⏰ Step 2 – Configure Trigger (Recurrence)**
 
-Add trigger:
+Add trigger: **Recurrence**
 
-**Recurrence**
+### Configuration - Parameters
 
-### Configuration
-
-| Property | Value |
-|----------|------|
+| Property  | Value |
+|-----------|-------|
 | Frequency | Day |
 | Interval | 1 |
-| Time zone | E. South America Standard Time |
-| Hour | 2 |
+| Time zone | <Your Time Zone> |
+| Hour   | 2 | #Hour and Minutes to Run Daily, 2:00AM in this example
 | Minute | 0 |
 
 ---
 
-## 🔧 Step 3 – Initialize Variables
+**## 🔧 Step 3 – Initialize Variables**
 
-Add action:
+Add action: **Initialize variable**
 
-**Initialize variable**
+Add those Variables:
 
 ---
-
-### prefix
+**### prefix**
 
 | Property | Value |
 |----------|------|
@@ -96,7 +94,7 @@ Add action:
 
 ---
 
-### thresholdDays
+**### thresholdDays**
 
 | Property | Value |
 |----------|------|
@@ -106,7 +104,7 @@ Add action:
 
 ---
 
-### tenantId
+**### tenantId**
 
 | Property | Value |
 |----------|------|
@@ -116,7 +114,7 @@ Add action:
 
 ---
 
-### clientId
+**### clientId**
 
 | Property | Value |
 |----------|------|
@@ -126,7 +124,7 @@ Add action:
 
 ---
 
-### clientSecret
+**### clientSecret**
 
 | Property | Value |
 |----------|------|
@@ -138,7 +136,7 @@ Add action:
 
 ---
 
-### notifyTo
+**### notifyTo**
 
 | Property | Value |
 |----------|------|
@@ -148,7 +146,7 @@ Add action:
 
 ---
 
-### expiringItems
+**### expiringItems**
 
 | Property | Value |
 |----------|------|
@@ -158,11 +156,9 @@ Add action:
 
 ---
 
-## 🌐 Step 4 – HTTP Action (Microsoft Graph)
+## **🌐 Step 4 – HTTP Action (Microsoft Graph)**
 
-Add action:
-
-**HTTP_Servidores**
+Add action: **HTTP**, Rename: **HTTP_Servidores**
 
 ### Method: **GET**
 ### URI : **https://graph.microsoft.com/v1.0/applications?$select=id,appId,displayName,passwordCredentials&$filter=startswith(displayName,'@{variables('prefix')}')&$count=true**
@@ -186,11 +182,9 @@ Use: **Active Directory OAuth**
 
 ---
 
-## 🧾 Step 5 – Parse JSON
+## **🧾 Step 5 – Parse JSON**
 
-Add action:
-
-**Parse_JSON_Servidores**
+Add action: **Parse JSON**, Rename: **Parse_JSON_Servidores**
 
 ### Content: **@body('HTTP_Servidores')**
 
@@ -215,23 +209,23 @@ Add action:
   ]
 }
 
-## 🧾 Step 6 – Loop Application
+## **🧾 Step 6 – Loop Application**
 
 Add action: **For Each**, Rename: **For_each_App**
 Input: **@body('Parse_JSON_Servidores')?['value']**
 
-## 🧾 Step 7 – Loop Client Secrets
+## **🧾 Step 7 – Loop Client Secrets**
 
 Inside previous loop: 
 Add action: **For Each**, Rename: **For_each_client_secret**
 Input: @items('For_each_App')?['passwordCredentials']
 
-Step 8 – Debug (Optional)
+## **Step 8 – Debug (Optional)**
 
 Add action: **COMPOSE**, Rename: **Compose_Debug**
 Input: @item()
 
-## 🧾 Step 9 – Condition
+## **🧾 Step 9 – Condition**
 
 Add action: **Condition**, Rename: **Checa_Secrets_a_Expirar**
 Expression: 
@@ -240,7 +234,7 @@ Expression:
   ticks(addDays(utcNow(), variables('thresholdDays')))
 )**
 
-## 🧾 Step 10 – Compose Email Body (Inside True)
+## **🧾 Step 10 – Compose Email Body (Inside True)**
 
 Add action: **COMPOSE**, Rename: **Compose_email_body**, inside True (Green) Side
 In Parameters, enter:
@@ -262,30 +256,30 @@ Add action: Send Email (From Azure Communication Service)
 
 ---
 
-### Configuration
+### Configuration - Parameters
 
 | Property        | Value |
-|----------------|------|
-| Sender Address | `<your-sender@azurecomm.net>` |
-| To             | `<your-email@domain.com>` |
-| Subject        | `[ALERT] Secret expiring - @{items('For_each_App')?['displayName']}` |
-| Body           | Output from Compose_email_body |
-| Importance     | High |
+|-----------------|-------|
+| From | `<your-sender@azurecomm.net>` |
+| To   | `<your-email@domain.com>`     |
+| Subject | `[ALERT] Secret expiring - @{items('For_each_App')?['displayName']}` |
+| Body  | Output from Compose_email_body |
+| Importance | High |
 ``
 
 ---
 
 ## 🔍 Where to get each configuration value
 
-This section explains where to retrieve the values required in **Step 11 – Send Email**, especially the **Sender Address**, which is mandatory for Azure Communication Services Email.
+This section explains where to retrieve the **From** required in **Step 11 – Send Email**, which is mandatory for Azure Communication Services Email.
 
 ---
 
-### 📧 Sender Address (IMPORTANT)
+### 📧 From (IMPORTANT)
 
 | Property | Description |
 |----------|------------|
-| Sender Address | Email address configured in Azure Communication Services |
+| From | Email address configured in Azure Communication Services |
 
 ✅ This value **must come from Azure Communication Services (ACS)**.
 
@@ -306,24 +300,21 @@ It **will NOT work** with:
 ```
 
 In the left menu, go to: **Email → Domains**
-Select your verified domain (e.g., yourdomain.azurecomm.net)
-
+Click your verified domain (e.g., yourdomain.azurecomm.net)
+Click : **MailFromAddresses**
 Open: **Sender usernames**
 
-Copy one of the available senders: **DoNotReply@<your-acs-domain>.azurecomm.net**
-
+Copy one of the available MailFrom Addresses: **DoNotReply@<your-acs-domain>.azurecomm.net**
 
 🛡️ Security Best Practices
 
 Store secrets in Azure Key Vault
 Prefer Managed Identity (future improvement)
-Use least privilege:
 
+Use least privilege:
 Application.Read.All
 
-
 Enable diagnostics logs
-
 
 📌 Summary
 This Logic App:

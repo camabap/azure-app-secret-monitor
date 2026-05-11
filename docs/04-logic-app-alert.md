@@ -60,7 +60,6 @@ You can modify it later:
 ---
 
 ## ⏰ Step 2 – Configure Trigger (Recurrence)
-``
 
 Add trigger: **Recurrence**
 
@@ -77,7 +76,6 @@ Add trigger: **Recurrence**
 ---
 
 ### 🔧 Step 3 – Initialize Variables
-``
 
 Add action: **Initialize variable**
 
@@ -156,7 +154,6 @@ Add those Variables:
 ---
 
 ### 🌐 Step 4 – HTTP Action (Microsoft Graph)
-``
 
 Add action: **HTTP**, Rename: **HTTP_Servidores**
 
@@ -183,7 +180,7 @@ Use: **Active Directory OAuth**
 ---
 
 ### 🧾 Step 5 – Parse JSON
-``
+
 Add action: **Parse JSON**, Rename: **Parse_JSON_Servidores**
 
 ### Content: **@body('HTTP_Servidores')**
@@ -210,7 +207,6 @@ Add action: **Parse JSON**, Rename: **Parse_JSON_Servidores**
 }
 
 ### 🧾 Step 6 – Loop Application
-``
 
 Add action: **For Each**, Rename: **For_each_App**
 Input: **@body('Parse_JSON_Servidores')?['value']**

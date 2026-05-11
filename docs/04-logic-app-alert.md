@@ -69,9 +69,13 @@ Add trigger: **Recurrence**
 |-----------|-------|
 | Frequency | Day |
 | Interval | 1 |
-| Time zone | <Your Time Zone> |
-| Hour   | 2 | #Hour and Minutes to Run Daily, 2:00AM in this example
+| Time zone | `<Your Time Zone>` |
+| Hour   | 2 | 
 | Minute | 0 |
+
+💡 **Note:** Hour and Minute define the daily execution time.  
+> In this example, the Logic App runs at **02:00 AM**.
+
 
 ---
 

@@ -207,11 +207,14 @@ Add action: **Parse JSON**, Rename: **Parse_JSON_Servidores**
 }
 ```
 
+---
+
 ## 🔁 Step 6 – Loop Application
 
 Add action: **For Each**, Rename: **For_each_App**  
 Input: **@body('Parse_JSON_Servidores')?['value']**
 
+---
 
 ## 🔁 Step 7 – Loop Client Secrets
 
@@ -219,12 +222,14 @@ Inside previous loop:
 Add action: **For Each**, Rename: **For_each_client_secret**  
 Input: **@items('For_each_App')?['passwordCredentials']**
 
+---
 
 ## 🧪 Step 8 – Debug (Optional)
 
 Add action: **COMPOSE**, Rename: **Compose_Debug**  
 Input: **@item()**
 
+---
 
 ## 🔍 Step 9 – Condition
 
@@ -236,6 +241,7 @@ Expression:
   ticks(addDays(utcNow(), variables('thresholdDays')))
 )**
 
+---
 
 ## ✉️ Step 10 – Compose Email Body (Inside True)
 
@@ -254,6 +260,7 @@ In Parameters, enter:
 <p>Este secret expira em menos de 30 dias. Favor tomar as ações necessárias.</p>
 **
 
+---
 
 ## 📧 Step 11 – Send Email  
 

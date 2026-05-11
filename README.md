@@ -78,21 +78,25 @@ The solution is composed of the following components:
 
 ## 📂 Repository Structure
 
+```
 /docs
-├── 01-architecture.md
-├── 02-azure-communication-service.md
-├── 03-app-registration.md
-├── 04-logic-app-alert.md
-├── 05-logic-app-inventory.md
-├── 06-log-analytics.md
-├── 07-workbook.md
+  ├── 01-architecture.md
+  ├── 02-azure-communication-service.md
+  ├── 03-app-registration.md
+  ├── 04-logic-app-alert.md
+  ├── 05-logic-app-inventory.md
+  ├── 06-log-analytics.md
+  ├── 07-workbook.md
+
 /templates
-├── logicapp-alert.json
-├── logicapp-inventory.json
-├── workbook.json
-├── dcr.json
-├── dce.json
-├── table-schema.json
+  ├── logicapp-alert.json
+  ├── logicapp-inventory.json
+  ├── workbook.json
+  ├── dcr.json
+  ├── dce.json
+  ├── table-schema.json
+```
+``
 
 ---
 

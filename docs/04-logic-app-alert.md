@@ -1,4 +1,4 @@
-# 04 – Logic App Alert Configuration
+# 04 - Logic App Alert Configuration
 
 This document provides a **step-by-step guide** to configure a Logic App that monitors Azure AD App Registration client secret expiration and sends alerts using Azure Communication Services.
 
@@ -29,8 +29,6 @@ This Logic App will:
 ## ⚠️ Lab Behavior (Important)
 
 For lab purposes, the Logic App only evaluates applications whose name starts with:
-
-```plaintext
 **Demo-**
 
 This is controlled by a variable: **prefix = "Demo-"**
@@ -41,8 +39,7 @@ You can modify it later:
 "prod-" → production apps
 "dev-" → development apps
 
-## 🚀 Step 1 – Create Logic App
-``
+### 🚀 Step 1 – Create Logic App
 
 1. Go to Azure Portal  
 2. Click **Create Resource**  

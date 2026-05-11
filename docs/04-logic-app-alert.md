@@ -39,13 +39,13 @@ You can modify it later:
 "prod-" → production apps
 "dev-" → development apps
 
-### 🚀 Step 1 – Create Logic App
+## 🚀 Step 1 – Create Logic App
 
 1. Go to Azure Portal  
 2. Click **Create Resource**  
 3. Search **Logic App (Consumption)**  
 
-### Configuration
+## Configuration
 
 | Setting | Value |
 |--------|------|
@@ -63,7 +63,7 @@ You can modify it later:
 
 Add trigger: **Recurrence**
 
-### Configuration - Parameters
+## Configuration - Parameters
 
 | Property  | Value |
 |-----------|-------|
@@ -75,7 +75,7 @@ Add trigger: **Recurrence**
 
 ---
 
-### 🔧 Step 3 – Initialize Variables
+## 🔧 Step 3 – Initialize Variables
 
 Add action: **Initialize variable**
 
@@ -153,7 +153,7 @@ Add those Variables:
 
 ---
 
-### 🌐 Step 4 – HTTP Action (Microsoft Graph)
+## 🌐 Step 4 – HTTP Action (Microsoft Graph)
 
 Add action: **HTTP**, Rename: **HTTP_Servidores**
 
@@ -179,7 +179,7 @@ Use: **Active Directory OAuth**
 
 ---
 
-### 🧾 Step 5 – Parse JSON
+## 🧾 Step 5 – Parse JSON
 
 Add action: **Parse JSON**, Rename: **Parse_JSON_Servidores**
 
@@ -205,25 +205,24 @@ Add action: **Parse JSON**, Rename: **Parse_JSON_Servidores**
     }
   ]
 }
-
-### 🧾 Step 6 – Loop Application
+```
+## 🧾 Step 6 – Loop Application
 
 Add action: **For Each**, Rename: **For_each_App**
 Input: **@body('Parse_JSON_Servidores')?['value']**
 
-### 🧾 Step 7 – Loop Client Secrets
-``
+## 🧾 Step 7 – Loop Client Secrets
+
 Inside previous loop: 
 Add action: **For Each**, Rename: **For_each_client_secret**
 Input: @items('For_each_App')?['passwordCredentials']
 
-### Step 8 – Debug (Optional)
-``
+## Step 8 – Debug (Optional)
+
 Add action: **COMPOSE**, Rename: **Compose_Debug**
 Input: @item()
 
-### 🧾 Step 9 – Condition
-``
+## 🧾 Step 9 – Condition
 
 Add action: **Condition**, Rename: **Checa_Secrets_a_Expirar**
 Expression: 
@@ -232,8 +231,7 @@ Expression:
   ticks(addDays(utcNow(), variables('thresholdDays')))
 )**
 
-### 🧾 Step 10 – Compose Email Body (Inside True)
-``
+## 🧾 Step 10 – Compose Email Body (Inside True)
 
 Add action: **COMPOSE**, Rename: **Compose_email_body**, inside True (Green) Side
 In Parameters, enter:
@@ -249,8 +247,7 @@ In Parameters, enter:
 <p>Este secret expira em menos de 30 dias. Favor tomar as ações necessárias.</p>
 **
 
-### 📧 Step 11 – Send Email
-``
+## 📧 Step 11 – Send Email
 
 Add action: Send Email (From Azure Communication Service)
 

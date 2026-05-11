@@ -1,4 +1,4 @@
-# 03 – App Registration Configuration
+# 03 - App Registration Configuration
 
 This document describes how to configure an Azure AD (Microsoft Entra ID) **App Registration** used to monitor client secret expiration across applications.
 

@@ -1,4 +1,4 @@
-# 06-Log Analytics and data collection for Entra app secret monitoring
+# 05 - Log Analytics and data collection for Entra app secret monitoring
 
 This document describes how to configure Azure Monitor and Log Analytics to receive and store data about Entra ID (Azure AD) application registration client secret expirations.
 

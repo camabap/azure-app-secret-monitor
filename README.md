@@ -1,3 +1,5 @@
+![Public](https://img.shields.io/badge/visibility-public-brightgreen)
+
 # azure-app-secret-monitor
 Azure solution to monitor client secrets expiration and send alerts
 
@@ -173,8 +175,13 @@ Feel free to improve this solution by:
 - Enhancing templates
 - Adding automation (Bicep/Terraform)
 - Improving monitoring scenarios
+- Contact Me
 
 ---
+
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![GitHub release](https://img.shields.io/github/v/release/camabap/azure-app-secret-monitor)
+
 
 ## 📄 License
 

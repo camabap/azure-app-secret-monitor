@@ -95,6 +95,7 @@ The solution is composed of the following components:
   ├── dcr.json
   ├── dce.json
   ├── table-schema.json
+  ├── communicationservice.json 
 ```
 ``
 

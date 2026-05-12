@@ -325,9 +325,6 @@ Follow the steps below to create and load your custom workbook in **Azure Log An
       }
     }
   ],
-  "fallbackResourceIds": [
-    "/subscriptions/faf626e9-9a2e-48a2-aaf2-0aa9012a03b0/resourceGroups/vmadec-cost/providers/Microsoft.OperationalInsights/workspaces/Client-SecretLab-LAW-001"
-  ],
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
 }
 ```

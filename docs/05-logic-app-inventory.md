@@ -1,4 +1,4 @@
-# 05 - Logic App Inventory Configuration
+# 06 - Logic App Inventory Configuration
 
 This document provides a comprehensive, step-by-step guide for configuring a Logic App to monitor Azure AD application registration client secrets and send the data to a custom table..
 

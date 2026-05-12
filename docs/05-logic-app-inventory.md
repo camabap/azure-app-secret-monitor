@@ -53,7 +53,8 @@ You can modify it later:
 | Region | `<Your Region>` |
 
 4. Click **Review + Create**
-5. Go to Your Logic App and Select **Logic App Designer**
+5. Go to Your Logc App, Click **Identity** and In System Assigned Tab on **Status**, Click **On**
+6. Select **Logic App Designer**
 
 ---
 

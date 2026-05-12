@@ -92,9 +92,8 @@ The solution is composed of the following components:
   ├── logicapp-alert.json
   ├── logicapp-inventory.json
   ├── workbook.json
-  ├── dcr.json
   ├── dce.json
-  ├── table-schema.json
+  ├── table-schema.md
   ├── communicationservice.json 
 ```
 ``
@@ -140,8 +139,8 @@ Follow the step-by-step documentation available in the `/docs` folder:
 1. Create Azure Communication Service
 2. Configure App Registration and permissions
 3. Deploy Logic App for alerting
-4. Deploy Logic App for inventory collection
-5. Configure Log Analytics custom table and ingestion (DCR/DCE)
+4. Configure Log Analytics custom table and ingestion (DCR/DCE)
+5. Deploy Logic App for inventory collection
 6. Deploy Azure Workbook
 
 ---

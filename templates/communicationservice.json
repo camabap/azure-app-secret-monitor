@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "subscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "The Azure subscription ID where resources will be deployed"
+      }
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the resource group where the Communication Service will be deployed"
+      }
+    },
+    "acsServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Azure Communication Service resource"
+      }
+    },
+    "acsDataLocation": {
+      "type": "string",
+      "defaultValue": "United States",
+      "allowedValues": [
+        "United States",
+        "Europe",
+        "Asia Pacific"
+      ],
+      "metadata": {
+        "description": "The data location for the Communication Service (where data will be stored)"
+      }
+    },
+    "emailServiceResourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource group name where the Email Service resource is located"
+      }
+    },
+    "emailServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Email Service resource"
+      }
+    },
+    "emailDomainName": {
+      "type": "string",
+      "defaultValue": "AzureManagedDomain",
+      "metadata": {
+        "description": "The name of the email domain to link with the Communication Service"
+      }
+    }
+  },
+  "variables": {
+    "emailServiceResourceId": "[concat('/subscriptions/', parameters('subscriptionId'), '/resourceGroups/', parameters('emailServiceResourceGroupName'), '/providers/Microsoft.Communication/emailServices/', parameters('emailServiceName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Communication/CommunicationServices",
+      "apiVersion": "2025-09-01",
+      "name": "[parameters('acsServiceName')]",
+      "location": "global",
+      "properties": {
+        "dataLocation": "[parameters('acsDataLocation')]",
+        "linkedDomains": [
+          "[concat(variables('emailServiceResourceId'), '/domains/', parameters('emailDomainName'))]"
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "communicationServiceResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Communication/CommunicationServices', parameters('acsServiceName'))]",
+      "metadata": {
+        "description": "The resource ID of the deployed Communication Service"
+      }
+    },
+    "communicationServiceName": {
+      "type": "string",
+      "value": "[parameters('acsServiceName')]",
+      "metadata": {
+        "description": "The name of the deployed Communication Service"
+      }
+    }
+  }
+}

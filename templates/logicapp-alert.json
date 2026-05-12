@@ -1,0 +1,375 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "subscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "The Azure subscription ID where resources will be deployed"
+      }
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the resource group where the Logic App will be deployed"
+      }
+    },
+    "logicAppName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Logic App workflow"
+      }
+    },
+    "logicAppLocation": {
+      "type": "string",
+      "defaultValue": "eastasia",
+      "metadata": {
+        "description": "The Azure region where the Logic App will be deployed"
+      }
+    },
+    "acsEmailConnectionResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource group name where the ACS Email connection is located"
+      }
+    },
+    "acsEmailConnectionName": {
+      "type": "string",
+      "defaultValue": "acsemail-1",
+      "metadata": {
+        "description": "The name of the ACS Email connection"
+      }
+    },
+    "entraAppSecretPrefix": {
+      "type": "string",
+      "defaultValue": "demo-",
+      "metadata": {
+        "description": "Prefix to filter Entra applications (e.g., 'demo-', 'prod-')"
+      }
+    },
+    "expirationThresholdDays": {
+      "type": "int",
+      "defaultValue": 30,
+      "metadata": {
+        "description": "Number of days before secret expiration to send alert"
+      }
+    },
+    "entraAzureAdTenantId": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure AD Tenant ID (Directory ID) for Microsoft Graph API authentication"
+      }
+    },
+    "entraApplicationClientId": {
+      "type": "string",
+      "metadata": {
+        "description": "Entra Application (Client) ID for Microsoft Graph API authentication"
+      }
+    },
+    "entraApplicationClientSecret": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Entra Application Client Secret for Microsoft Graph API authentication"
+      }
+    },
+    "alertRecipientEmail": {
+      "type": "string",
+      "metadata": {
+        "description": "Email address to receive alerts when secrets are expiring"
+      }
+    },
+    "scheduleTimeZone": {
+      "type": "string",
+      "defaultValue": "E. South America Standard Time",
+      "metadata": {
+        "description": "Time zone for the scheduled recurrence trigger"
+      }
+    },
+    "scheduleHour": {
+      "type": "int",
+      "defaultValue": 2,
+      "minValue": 0,
+      "maxValue": 23,
+      "metadata": {
+        "description": "Hour of day (0-23) to run the Logic App (in the specified timezone)"
+      }
+    },
+    "scheduleMinute": {
+      "type": "int",
+      "defaultValue": 0,
+      "minValue": 0,
+      "maxValue": 59,
+      "metadata": {
+        "description": "Minute of the hour (0-59) to run the Logic App"
+      }
+    }
+  },
+  "variables": {
+    "acsEmailConnectionId": "[concat('/subscriptions/', parameters('subscriptionId'), '/resourceGroups/', parameters('acsEmailConnectionResourceGroup'), '/providers/Microsoft.Web/connections/', parameters('acsEmailConnectionName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2017-07-01",
+      "name": "[parameters('logicAppName')]",
+      "location": "[parameters('logicAppLocation')]",
+      "properties": {
+        "state": "Enabled",
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+            }
+          },
+          "triggers": {
+            "Recurrence": {
+              "recurrence": {
+                "interval": 1,
+                "frequency": "Day",
+                "timeZone": "[parameters('scheduleTimeZone')]",
+                "schedule": {
+                  "hours": [
+                    "[parameters('scheduleHour')]"
+                  ],
+                  "minutes": [
+                    "[parameters('scheduleMinute')]"
+                  ]
+                }
+              },
+              "evaluatedRecurrence": {
+                "interval": 1,
+                "frequency": "Day",
+                "timeZone": "[parameters('scheduleTimeZone')]",
+                "schedule": {
+                  "hours": [
+                    "[parameters('scheduleHour')]"
+                  ],
+                  "minutes": [
+                    "[parameters('scheduleMinute')]"
+                  ]
+                }
+              },
+              "type": "Recurrence"
+            }
+          },
+          "actions": {
+            "Initialize_variables": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "prefix",
+                    "type": "string",
+                    "value": "[parameters('entraAppSecretPrefix')]"
+                  },
+                  {
+                    "name": "thresholdDays",
+                    "type": "integer",
+                    "value": "[parameters('expirationThresholdDays')]"
+                  },
+                  {
+                    "name": "tenantId",
+                    "type": "string",
+                    "value": "[parameters('entraAzureAdTenantId')]"
+                  },
+                  {
+                    "name": "clientId",
+                    "type": "string",
+                    "value": "[parameters('entraApplicationClientId')]"
+                  },
+                  {
+                    "name": "clientSecret",
+                    "type": "string",
+                    "value": "[parameters('entraApplicationClientSecret')]"
+                  },
+                  {
+                    "name": "notifyTo",
+                    "type": "string",
+                    "value": "[parameters('alertRecipientEmail')]"
+                  },
+                  {
+                    "name": "expiringItems",
+                    "type": "array"
+                  }
+                ]
+              }
+            },
+            "HTTP_Servidores": {
+              "runAfter": {
+                "Initialize_variables": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Http",
+              "inputs": {
+                "uri": "https://graph.microsoft.com/v1.0/applications?$select=id,appId,displayName,passwordCredentials&$filter=startswith(displayName,'@{variables('prefix')}')&$count=true",
+                "method": "GET",
+                "headers": {
+                  "Accept": "application/json",
+                  "ConsistencyLevel": "eventual"
+                },
+                "authentication": {
+                  "type": "ActiveDirectoryOAuth",
+                  "authority": "https://login.microsoftonline.com",
+                  "tenant": "@{variables('tenantId')}",
+                  "audience": "https://graph.microsoft.com",
+                  "clientId": "@{variables('clientId')}",
+                  "secret": "@{variables('clientSecret')}"
+                }
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            },
+            "Parse_JSON_Servidores": {
+              "runAfter": {
+                "HTTP_Servidores": [
+                  "Succeeded"
+                ]
+              },
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@body('HTTP_Servidores')",
+                "schema": {
+                  "value": [
+                    {
+                      "id": "00000000-0000-0000-0000-000000000000",
+                      "appId": "00000000-0000-0000-0000-000000000000",
+                      "displayName": "demo-expiring-app-001",
+                      "passwordCredentials": [
+                        {
+                          "displayName": "secret-1",
+                          "keyId": "00000000-0000-0000-0000-000000000000",
+                          "startDateTime": "2026-01-01T00:00:00Z",
+                          "endDateTime": "2026-06-01T00:00:00Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "For_each_App": {
+              "foreach": "@body('Parse_JSON_Servidores')?['value']",
+              "actions": {
+                "For_each_client_secret": {
+                  "foreach": "@item()?['passwordCredentials']",
+                  "actions": {
+                    "Checa_Secrets_a_Expirar": {
+                      "actions": {
+                        "Compose_email_body": {
+                          "type": "Compose",
+                          "inputs": "<p><strong>Atenção: Client Secret próximo de expirar</strong></p>\n\n<p><strong>Aplicação:</strong> @{items('For_each_App')?['displayName']}</p>\n<p><strong>AppId:</strong> @{items('For_each_App')?['appId']}</p>\n\n<p><strong>Client Secret:</strong> @{items('For_each_client_secret')?['displayName']}</p>\n<p><strong>Hint:</strong> @{items('For_each_client_secret')?['hint']}</p>\n<p><strong>Data de expiração:</strong> @{items('For_each_client_secret')?['endDateTime']}</p>\n\n<p>Este secret expira em menos de 30 dias. Favor tomar as ações necessárias.</p>"
+                        },
+                        "Send_email": {
+                          "runAfter": {
+                            "Compose_email_body": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "ApiConnection",
+                          "inputs": {
+                            "host": {
+                              "connection": {
+                                "name": "@parameters('$connections')['acsemail-1']['connectionId']"
+                              }
+                            },
+                            "method": "post",
+                            "body": {
+                              "senderAddress": "DoNotReply@e75a24d8-4d9a-407e-9a2a-e64f622c9ae1.azurecomm.net",
+                              "recipients": {
+                                "to": [
+                                  {
+                                    "address": "@variables('notifyTo')"
+                                  }
+                                ]
+                              },
+                              "content": {
+                                "subject": "[ALERTA] Secret expira em menos de 30 dias - @{items('For_each_App')?['displayName']}",
+                                "html": "<p class=\"editor-paragraph\">@{outputs('Compose_email_body')}</p>"
+                              },
+                              "importance": "High"
+                            },
+                            "path": "/emails:sendGAVersion",
+                            "queries": {
+                              "api-version": "2023-03-31"
+                            }
+                          }
+                        }
+                      },
+                      "runAfter": {
+                        "Compose_Debug": [
+                          "Succeeded"
+                        ]
+                      },
+                      "else": {
+                        "actions": {}
+                      },
+                      "expression": {
+                        "and": [
+                          {
+                            "less": [
+                              "@ticks(item()?['endDateTime'])",
+                              "@ticks(addDays(utcNow(), 30))"
+                            ]
+                          }
+                        ]
+                      },
+                      "type": "If"
+                    },
+                    "Compose_Debug": {
+                      "type": "Compose",
+                      "inputs": "@item()"
+                    }
+                  },
+                  "type": "Foreach"
+                }
+              },
+              "runAfter": {
+                "Parse_JSON_Servidores": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach"
+            }
+          },
+          "outputs": {}
+        },
+        "parameters": {
+          "$connections": {
+            "value": {
+              "acsemail-1": {
+                "id": "/subscriptions/[parameters('subscriptionId')]/providers/Microsoft.Web/locations/[parameters('logicAppLocation')]/managedApis/acsemail",
+                "connectionId": "[variables('acsEmailConnectionId')]",
+                "connectionName": "[parameters('acsEmailConnectionName')]",
+                "connectionProperties": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "logicAppResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Logic/workflows', parameters('logicAppName'))]",
+      "metadata": {
+        "description": "The resource ID of the deployed Logic App"
+      }
+    },
+    "logicAppName": {
+      "type": "string",
+      "value": "[parameters('logicAppName')]",
+      "metadata": {
+        "description": "The name of the deployed Logic App"
+      }
+    }
+  }
+}

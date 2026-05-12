@@ -1,0 +1,86 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "subscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "The Azure subscription ID where resources will be deployed"
+      }
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the resource group where the Data Collection Endpoint will be deployed"
+      }
+    },
+    "dceResourceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Data Collection Endpoint resource"
+      }
+    },
+    "dceLocation": {
+      "type": "string",
+      "defaultValue": "eastasia",
+      "metadata": {
+        "description": "The Azure region where the Data Collection Endpoint will be deployed"
+      }
+    },
+    "publicNetworkAccessEnabled": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Whether to enable public network access to the Data Collection Endpoint"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to apply to the Data Collection Endpoint resource"
+      }
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Insights/dataCollectionEndpoints",
+      "apiVersion": "2023-03-11",
+      "name": "[parameters('dceResourceName')]",
+      "location": "[parameters('dceLocation')]",
+      "tags": "[parameters('tags')]",
+      "properties": {
+        "configurationAccess": {},
+        "logsIngestion": {},
+        "metricsIngestion": {},
+        "networkAcls": {
+          "publicNetworkAccess": "[if(parameters('publicNetworkAccessEnabled'), 'Enabled', 'Disabled')]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "dataCollectionEndpointResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', parameters('dceResourceName'))]",
+      "metadata": {
+        "description": "The resource ID of the deployed Data Collection Endpoint"
+      }
+    },
+    "dataCollectionEndpointName": {
+      "type": "string",
+      "value": "[parameters('dceResourceName')]",
+      "metadata": {
+        "description": "The name of the deployed Data Collection Endpoint"
+      }
+    },
+    "dataCollectionEndpointLogsIngestionUri": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Insights/dataCollectionEndpoints', parameters('dceResourceName'))).logsIngestion.endpoint]",
+      "metadata": {
+        "description": "The logs ingestion endpoint URI of the Data Collection Endpoint"
+      }
+    }
+  }
+}

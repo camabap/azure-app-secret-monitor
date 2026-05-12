@@ -1,0 +1,269 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "## Client Secrets Monitor\n---\n\nMonitoração da Expiração dos Client Secrets\nAbaixo a visão geral dos client Secrets com Dias a expirar"
+      },
+      "name": "text - 2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let LatestSecrets =\r\n    EntraAppSecrets_CL\r\n    | summarize arg_max(TimeGenerated, *) by ApplicationName, SecretName;\r\n\r\nLatestSecrets\r\n| extend DaysToExpire = datetime_diff('day', SecretExpirationDate, now())\r\n| extend Status =\r\n    case(\r\n        DaysToExpire < 0, \"Expiradas\",\r\n        DaysToExpire <= 30, \"Expirando\",\r\n        DaysToExpire <= 90, \"Atencao\",\r\n        \"Saudavel\"\r\n    )\r\n| project\r\n    ApplicationName,\r\n    SecretName,\r\n    SecretExpirationDate,\r\n    DaysToExpire,\r\n    Status\r\n| order by DaysToExpire asc",
+        "size": 0,
+        "title": "Visão dos Client Secrets",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "DaysToExpire",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "<",
+                    "thresholdValue": "0",
+                    "representation": "redDark",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "<=",
+                    "thresholdValue": "30",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "<=",
+                    "thresholdValue": "90",
+                    "representation": "yellow",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Status",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Expiradas",
+                    "representation": "3",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Expirando",
+                    "representation": "4",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Atencao",
+                    "representation": "2",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "name": "query - 2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let LatestSecrets =\r\n    EntraAppSecrets_CL\r\n    | summarize arg_max(TimeGenerated, *) by ApplicationName, SecretName;\r\n\r\nLatestSecrets\r\n| extend DaysToExpire = datetime_diff('day', SecretExpirationDate, now())\r\n| extend Status =\r\n    case(\r\n        DaysToExpire < 0, \"Expirados\",\r\n        DaysToExpire <= 30, \"Expirando\",\r\n        DaysToExpire <= 90, \"Atencao\",\r\n        \"OK\"\r\n    )\r\n| summarize TotalSecrets = count() by Status\r\n| order by Status asc",
+        "size": 0,
+        "title": "Visão Geral dos Client Secrets",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart",
+        "chartSettings": {
+          "seriesLabelSettings": [
+            {
+              "seriesName": "Expirando",
+              "color": "redBright"
+            },
+            {
+              "seriesName": "OK",
+              "color": "green"
+            },
+            {
+              "seriesName": "Atencao",
+              "color": "yellow"
+            },
+            {
+              "color": "redDark"
+            }
+          ]
+        }
+      },
+      "customWidth": "40",
+      "name": "query - 2",
+      "styleSettings": {
+        "showBorder": true
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let LatestSecrets =\r\n    EntraAppSecrets_CL\r\n    | summarize arg_max(TimeGenerated, *) by ApplicationName, SecretName;\r\n\r\nLatestSecrets\r\n| extend DaysToExpire = datetime_diff('day', SecretExpirationDate, now())\r\n| summarize\r\n    Expirando = countif(DaysToExpire between (0 .. 30)),\r\n    Expirados = countif(DaysToExpire < 0)\r\nby ApplicationName\r\n| where Expirando > 0 or Expirados > 0\r\n| order by Expirados desc, Expirando desc",
+        "size": 0,
+        "title": "Servidores com Client Secrets Expirados ou a Expirar",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Expirando",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": ">",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Expirados",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": ">",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "ExpiringSoon",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": ">",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Expired",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": ">",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ],
+          "sortBy": [
+            {
+              "itemKey": "ApplicationName",
+              "sortOrder": 1
+            }
+          ]
+        },
+        "sortBy": [
+          {
+            "itemKey": "ApplicationName",
+            "sortOrder": 1
+          }
+        ]
+      },
+      "customWidth": "50",
+      "name": "query - 3",
+      "styleSettings": {
+        "showBorder": true
+      }
+    }
+  ],
+  "fallbackResourceIds": [
+    "/subscriptions/faf626e9-9a2e-48a2-aaf2-0aa9012a03b0/resourceGroups/vmadec-cost/providers/Microsoft.OperationalInsights/workspaces/Client-SecretLab-LAW-001"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

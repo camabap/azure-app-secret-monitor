@@ -1,6 +1,6 @@
-# 07 – Deploying the Client Secrets Monitor Workbook
+# 07 - Deploying the Client Secrets Monitor Workbook
 
-This document explains how to deploy the **Client Secrets Monitor Workbook** using the ARM template provided in this repository.  
+This document explains how to deploy the **Client Secrets Monitor Workbook** using the Gallery template provided in this repository.  
 The workbook offers a visual dashboard that displays the status of Entra ID (Azure AD) application client secrets, including:
 
 - Secrets already expired  
@@ -14,7 +14,7 @@ The workbook reads data from the custom table **`EntraAppSecrets_CL`**, created 
 
 ---
 
-## 📘 What the Workbook Does
+## 📘 What the Workbook Does?
 
 The workbook provides a centralized, interactive view of all client secrets ingested into Log Analytics.  
 It uses KQL queries to:
@@ -37,112 +37,298 @@ This workbook is ideal for security teams, platform engineering, and identity go
 
 ## 🧩 Deploying the Workbook from the Template
 
-You will deploy the workbook using the ARM template included in this repository.  
-The template is parameterized so **you must provide your own values** for:
+### 🧾 Sanitized ARM Template (Ready for Use)
 
-- `<subscriptionId>`
-- `<resourceGroupName>`
-- `<logAnalyticsWorkspaceId>`
-- `<location>`
-- `<workbookDisplayName>` (optional)
-- `<workbookId>` (optional, defaults to a new GUID)
+Below is your workbook template.
 
-### ✔ Step‑by‑step (Azure Portal)
+## How to Deploy?
 
-1. Open the Azure Portal:  
-   https://portal.azure.com
+# Workbook setup instructions
 
-2. Navigate to:  
-   **Deploy a custom template**  
-   (Search for “Deploy a custom template” in the global search bar)
-
-3. Click **Build your own template in the editor**.
-
-4. Paste the sanitized template provided below.
-
-5. Click **Save**.
-
-6. Fill in the parameters:
-   - **workbookDisplayName** → e.g., `Client Secrets Monitor`
-   - **workbookType** → `workbook`
-   - **workbookSourceId** →  
-     `/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.OperationalInsights/workspaces/<workspaceName>`
-   - **workbookId** → leave default or provide your own GUID
-
-7. Click **Review + Create** → **Create**.
-
-8. After deployment, go to:  
-   **Azure Monitor → Workbooks → My Workbooks**  
-   or  
-   **Log Analytics Workspace → Workbooks**
-
-You will see the workbook with the name you provided.
+Follow the steps below to create and load your custom workbook in **Azure Log Analytics**.
 
 ---
 
-## 🧾 Sanitized ARM Template (Ready for Use)
+1. Open your **Log Analytics Workspace** in the Azure Portal.
+2. Go to Workbooks
+3. In the left navigation menu, under **Monitoring**, click **Workbooks**.
+4. Click **New+** to create a new workbook.
+5. Click the **Code** icon **`</>`** to switch to the JSON editor.
+6. Delete all existing content and paste the new JSON code bellow.
 
-Below is your workbook template rewritten with **placeholders** instead of sensitive values.  
-Users only need to replace the parameters during deployment.
+### Attention: The workbook queries the `EntraAppSecrets_CL` table. If your table has a different name, you must replace all occurrences of `EntraAppSecrets_CL`.
 
 > **Note:** The structure and logic are preserved exactly as in your original template.
 
 ```json
 {
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "workbookDisplayName": {
-      "type": "string",
-      "defaultValue": "Client Secrets Monitor",
-      "metadata": {
-        "description": "Friendly name for the workbook."
-      }
-    },
-    "workbookType": {
-      "type": "string",
-      "defaultValue": "workbook",
-      "metadata": {
-        "description": "Gallery type where the workbook will appear."
-      }
-    },
-    "workbookSourceId": {
-      "type": "string",
-      "defaultValue": "/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.OperationalInsights/workspaces/<workspaceName>",
-      "metadata": {
-        "description": "Resource ID of the Log Analytics workspace."
-      }
-    },
-    "workbookId": {
-      "type": "string",
-      "defaultValue": "[newGuid()]",
-      "metadata": {
-        "description": "Unique GUID for this workbook instance."
-      }
-    }
-  },
-  "resources": [
+  "version": "Notebook/1.0",
+  "items": [
     {
-      "name": "[parameters('workbookId')]",
-      "type": "microsoft.insights/workbooks",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2022-04-01",
-      "kind": "shared",
-      "properties": {
-        "displayName": "[parameters('workbookDisplayName')]",
-        "serializedData": "<THE SAME JSON PAYLOAD FROM YOUR TEMPLATE GOES HERE WITHOUT CHANGES>",
-        "version": "1.0",
-        "sourceId": "[parameters('workbookSourceId')]",
-        "category": "[parameters('workbookType')]"
+      "type": 1,
+      "content": {
+        "json": "## Client Secrets Monitor\n---\n\nMonitoração da Expiração dos Client Secrets\nAbaixo a visão geral dos client Secrets com Dias a expirar"
+      },
+      "name": "text - 2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let LatestSecrets =\r\n    EntraAppSecrets_CL\r\n    | summarize arg_max(TimeGenerated, *) by ApplicationName, SecretName;\r\n\r\nLatestSecrets\r\n| extend DaysToExpire = datetime_diff('day', SecretExpirationDate, now())\r\n| extend Status =\r\n    case(\r\n        DaysToExpire < 0, \"Expiradas\",\r\n        DaysToExpire <= 30, \"Expirando\",\r\n        DaysToExpire <= 90, \"Atencao\",\r\n        \"Saudavel\"\r\n    )\r\n| project\r\n    ApplicationName,\r\n    SecretName,\r\n    SecretExpirationDate,\r\n    DaysToExpire,\r\n    Status\r\n| order by DaysToExpire asc",
+        "size": 0,
+        "title": "Visão dos Client Secrets",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "table",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "DaysToExpire",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": "<",
+                    "thresholdValue": "0",
+                    "representation": "redDark",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "<=",
+                    "thresholdValue": "30",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "<=",
+                    "thresholdValue": "90",
+                    "representation": "yellow",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Status",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Expiradas",
+                    "representation": "3",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Expirando",
+                    "representation": "4",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "==",
+                    "thresholdValue": "Atencao",
+                    "representation": "2",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "1",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "name": "query - 2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let LatestSecrets =\r\n    EntraAppSecrets_CL\r\n    | summarize arg_max(TimeGenerated, *) by ApplicationName, SecretName;\r\n\r\nLatestSecrets\r\n| extend DaysToExpire = datetime_diff('day', SecretExpirationDate, now())\r\n| extend Status =\r\n    case(\r\n        DaysToExpire < 0, \"Expirados\",\r\n        DaysToExpire <= 30, \"Expirando\",\r\n        DaysToExpire <= 90, \"Atencao\",\r\n        \"OK\"\r\n    )\r\n| summarize TotalSecrets = count() by Status\r\n| order by Status asc",
+        "size": 0,
+        "title": "Visão Geral dos Client Secrets",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "piechart",
+        "chartSettings": {
+          "seriesLabelSettings": [
+            {
+              "seriesName": "Expirando",
+              "color": "redBright"
+            },
+            {
+              "seriesName": "OK",
+              "color": "green"
+            },
+            {
+              "seriesName": "Atencao",
+              "color": "yellow"
+            },
+            {
+              "color": "redDark"
+            }
+          ]
+        }
+      },
+      "customWidth": "40",
+      "name": "query - 2",
+      "styleSettings": {
+        "showBorder": true
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let LatestSecrets =\r\n    EntraAppSecrets_CL\r\n    | summarize arg_max(TimeGenerated, *) by ApplicationName, SecretName;\r\n\r\nLatestSecrets\r\n| extend DaysToExpire = datetime_diff('day', SecretExpirationDate, now())\r\n| summarize\r\n    Expirando = countif(DaysToExpire between (0 .. 30)),\r\n    Expirados = countif(DaysToExpire < 0)\r\nby ApplicationName\r\n| where Expirando > 0 or Expirados > 0\r\n| order by Expirados desc, Expirando desc",
+        "size": 0,
+        "title": "Servidores com Client Secrets Expirados ou a Expirar",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Expirando",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": ">",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Expirados",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": ">",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "ExpiringSoon",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "operator": ">",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            },
+            {
+              "columnMatch": "Expired",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "colors",
+                "thresholdsGrid": [
+                  {
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": ">",
+                    "thresholdValue": "0",
+                    "representation": "redBright",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "green",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ],
+          "sortBy": [
+            {
+              "itemKey": "ApplicationName",
+              "sortOrder": 1
+            }
+          ]
+        },
+        "sortBy": [
+          {
+            "itemKey": "ApplicationName",
+            "sortOrder": 1
+          }
+        ]
+      },
+      "customWidth": "50",
+      "name": "query - 3",
+      "styleSettings": {
+        "showBorder": true
       }
     }
   ],
-  "outputs": {
-    "workbookId": {
-      "type": "string",
-      "value": "[resourceId('microsoft.insights/workbooks', parameters('workbookId'))]"
-    }
-  },
-  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+  "fallbackResourceIds": [
+    "/subscriptions/faf626e9-9a2e-48a2-aaf2-0aa9012a03b0/resourceGroups/vmadec-cost/providers/Microsoft.OperationalInsights/workspaces/Client-SecretLab-LAW-001"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
 }
 ```
 
